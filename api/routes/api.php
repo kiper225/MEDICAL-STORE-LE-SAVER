@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\{
     AuthController, ProductController, CategoryController,
     RentalController, InstallationController, OrderController, PaymentController,
-    TechnicianController, UserController
+    TechnicianController, UserController, AdminController, ReviewController
 };
 use Illuminate\Support\Facades\Route;
 

@@ -1,0 +1,41 @@
+{
+    "nom": "Fauteuil roulant électrique Confort Plus",
+    "description": "Fauteuil roulant électrique avec système de contrôle assisté, idéal pour usage quotidien à domicile.",
+    "category_id": 2,
+    "reference": "FRE-001",
+    "type_disponibilite": "les_deux",
+    "necessite_installation": true,
+    "necessite_certification": false,
+    "prix_vente": 850000,
+    "prix_location_jour": 5000,
+    "prix_location_semaine": 30000,
+    "prix_location_mois": 100000,
+    "caution_location": 200000,
+    "poids": 45.5,
+    "dimensions": "110x65x120 cm"
+}
+
+['email' => 'admin@medical-store.com'],
+[
+    'nom' => 'GERVAIS KIPRE',
+    'password' => Hash::make('changeMoi123!'),
+    'role' => 'admin',
+    'telephone' => '0769459084',
+    'adresse' => 'Abidjan, Côte d\'Ivoire',
+]
+
+{
+    "nom": "Client Test",
+    "email": "client@test.com",
+    "password": "password123",
+    "password_confirmation": "password123",
+    "role": "client"
+}
+
+{
+    "nom": "Technicien Test",
+    "email": "technicien@test.com",
+    "password": "password123",
+    "password_confirmation": "password123",
+    "role": "technicien"
+}

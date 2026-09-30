@@ -1,0 +1,8 @@
+/* app/app/assets/css/main.css */
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --color-primary-500: #1e3a7a; /* ajuste avec le bleu exact du logo si besoin */
+  --color-primary-600: #16305f;
+}

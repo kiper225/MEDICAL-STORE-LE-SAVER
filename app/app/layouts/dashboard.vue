@@ -13,7 +13,8 @@ const navByRole = {
     { label: 'Installations', to: '/dashboard/admin/installations', icon: 'i-lucide-wrench' },
   ],
   vendeur: [
-    { label: 'Mes produits', to: '/dashboard/vendeur', icon: 'i-lucide-package' },
+    { label: 'Tableau de bord', to: '/dashboard/vendeur', icon: 'i-lucide-layout-dashboard' },
+    { label: 'Mes produits', to: '/dashboard/vendeur/produits', icon: 'i-lucide-package' },
     { label: 'Mes commandes', to: '/dashboard/vendeur/commandes', icon: 'i-lucide-shopping-cart' },
   ],
   technicien: [

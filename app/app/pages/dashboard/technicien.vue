@@ -4,6 +4,9 @@ definePageMeta({ middleware: 'auth', layout: 'dashboard', pageTitle: 'Mon espace
 const authStore = useAuthStore()
 const { getMyInstallations, updateInstallation } = useInstallations()
 const toast = useToast()
+const { getTechnicienDashboard } = useInstallations()
+const { data: techStats } = await useAsyncData('tech-stats', () => getTechnicienDashboard())
+
 
 const { data: installations, refresh } = await useAsyncData('my-installations', () =>
   getMyInstallations()
@@ -59,5 +62,28 @@ const marquerTerminee = async (id) => {
       </UCard>
     </div>
     <p v-else class="text-gray-500">Aucune intervention assignée pour le moment.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <UCard>
+        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+          <UIcon name="i-lucide-clipboard-list" class="w-5 h-5 text-primary" />
+        </div>
+        <p class="text-sm text-gray-500">Total interventions</p>
+        <p class="text-2xl font-bold mt-1">{{ techStats?.total_installations ?? 0 }}</p>
+      </UCard>
+      <UCard>
+        <div class="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center mb-3">
+          <UIcon name="i-lucide-clock" class="w-5 h-5 text-warning" />
+        </div>
+        <p class="text-sm text-gray-500">En attente</p>
+        <p class="text-2xl font-bold mt-1">{{ techStats?.en_attente ?? 0 }}</p>
+      </UCard>
+      <UCard>
+        <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center mb-3">
+          <UIcon name="i-lucide-check-circle" class="w-5 h-5 text-success" />
+        </div>
+        <p class="text-sm text-gray-500">Terminées</p>
+        <p class="text-2xl font-bold mt-1">{{ techStats?.terminees ?? 0 }}</p>
+      </UCard>
+    </div>
   </div>
 </template>

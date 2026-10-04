@@ -1,5 +1,5 @@
 <script setup>
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', layout: 'dashboard', pageTitle: 'Mon espace' })
 
 const { createProduct } = useProducts()
 const { getCategories } = useCategories()

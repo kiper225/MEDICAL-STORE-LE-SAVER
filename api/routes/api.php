@@ -54,12 +54,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vendor/orders', [OrderController::class, 'vendorOrders']);
         Route::post('/products/{product}/images', [ProductController::class, 'uploadImages']);
         Route::delete('/products/{product}/images/{image}', [ProductController::class, 'deleteImage']);
+        Route::get('/vendor/dashboard', [OrderController::class, 'vendorDashboard']);
     });
 
     // --- Technicien ---
     Route::middleware('role:technicien,admin')->group(function () {
         Route::apiResource('installations', InstallationController::class);
         Route::get('/my-installations', [InstallationController::class, 'myInstallations']);
+        Route::get('/technicien/dashboard', [InstallationController::class, 'technicienDashboard']);
     });
 
     // --- Admin uniquement ---

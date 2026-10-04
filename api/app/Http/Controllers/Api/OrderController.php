@@ -85,4 +85,33 @@ class OrderController extends Controller
 
         return response()->json($orders);
     }
+
+    public function vendorDashboard(Request $request)
+    {
+        $vendorId = $request->user()->id;
+        $year = now()->year;
+
+        $orderIds = \App\Models\OrderItem::whereHas('product', fn($q) => $q->where('vendor_id', $vendorId))
+            ->pluck('order_id')->unique();
+
+        $totalRevenue = \App\Models\OrderItem::whereHas('product', fn($q) => $q->where('vendor_id', $vendorId))
+            ->whereHas('order', fn($q) => $q->whereIn('statut', ['paye', 'livre']))
+            ->selectRaw('SUM(quantite * prix_unitaire) as total')->value('total') ?? 0;
+
+        $ventesParMois = \App\Models\OrderItem::whereHas('product', fn($q) => $q->where('vendor_id', $vendorId))
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereIn('orders.statut', ['paye', 'livre'])
+            ->whereYear('orders.created_at', $year)
+            ->selectRaw('MONTH(orders.created_at) as mois, SUM(order_items.quantite * order_items.prix_unitaire) as total')
+            ->groupBy('mois')
+            ->pluck('total', 'mois');
+
+        return response()->json([
+            'total_products' => Product::where('vendor_id', $vendorId)->where('statut', 'actif')->count(),
+            'total_orders' => $orderIds->count(),
+            'total_revenue' => $totalRevenue,
+            'monthly_sales' => collect(range(1, 12))->map(fn($m) => (float) ($ventesParMois[$m] ?? 0)),
+            'recent_orders' => Order::whereIn('id', $orderIds)->with(['user', 'items.product'])->latest()->limit(6)->get(),
+        ]);
+    }
 }

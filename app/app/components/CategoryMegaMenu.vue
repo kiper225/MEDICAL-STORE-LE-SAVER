@@ -18,7 +18,7 @@ const activeCategory = computed(() =>
     @mouseleave="emit('close')"
   >
     <!-- Colonne gauche : catégories parentes -->
-    <div class="w-56 border-r border-gray-200 dark:border-gray-800 py-2 shrink-0">
+    <div class="w-100 border-r border-gray-200 dark:border-gray-800 py-2 shrink-0">
       <button
         v-for="parent in categoriesTree"
         :key="parent.slug"

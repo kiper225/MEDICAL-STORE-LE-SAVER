@@ -1,79 +1,86 @@
 <script setup>
-definePageMeta({ middleware: 'auth', layout: 'dashboard', pageTitle: 'Mon espace' })
+definePageMeta({ middleware: 'auth', layout: 'dashboard', pageTitle: 'Tableau de bord' })
 
-const authStore = useAuthStore()
-const { getProducts, deleteProduct, updateProduct } = useProducts()
-const toast = useToast()
+const { getVendorDashboard } = useOrders()
+const { data: stats } = await useAsyncData('vendor-dashboard', () => getVendorDashboard())
 
-const { data: products, refresh } = await useAsyncData('vendor-products', () =>
-  getProducts({ vendor_id: authStore.user.id })
-)
+const moisLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
 
-const handleDelete = async (slug) => {
-  try {
-    await deleteProduct(slug)
-    toast.add({ title: 'Produit désactivé', color: 'success' })
-    refresh()
-  } catch (err) {
-    toast.add({ title: 'Erreur', description: err.data?.message, color: 'error' })
-  }
-}
+const barOptions = computed(() => ({
+  chart: { toolbar: { show: false }, fontFamily: 'inherit' },
+  plotOptions: { bar: { borderRadius: 4, columnWidth: '45%' } },
+  dataLabels: { enabled: false },
+  colors: ['#1e3a7a'],
+  xaxis: { categories: moisLabels, axisBorder: { show: false }, axisTicks: { show: false } },
+  grid: { borderColor: '#f1f5f9' },
+  yaxis: { labels: { formatter: (v) => `${(v / 1000).toFixed(0)}K` } },
+}))
 
-const handleReactivate = async (slug) => {
-  try {
-    await updateProduct(slug, { statut: 'actif' })
-    toast.add({ title: 'Produit réactivé', color: 'success' })
-    refresh()
-  } catch (err) {
-    toast.add({ title: 'Erreur', description: err.data?.message, color: 'error' })
-  }
-}
+const barSeries = computed(() => [{ name: 'Ventes', data: stats.value?.monthly_sales || [] }])
+
+const statutColor = (statut) => ({
+  en_attente: 'warning', paye: 'success', livre: 'success', annule: 'error',
+}[statut] || 'neutral')
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-primary">Mes produits</h1>
-        <p class="text-gray-500">{{ authStore.user?.nom }}</p>
-      </div>
-      <UButton to="/dashboard/vendeur/nouveau-produit" icon="i-lucide-plus">
-        Ajouter un produit
-      </UButton>
-    </div>
-
-    <div v-if="products?.data?.length" class="space-y-3">
-      <UCard v-for="product in products.data" :key="product.slug">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium">{{ product.nom }}</p>
-            <p class="text-sm text-gray-500">
-              {{ product.reference }} ·
-              <UBadge size="xs" :color="product.statut === 'actif' ? 'success' : 'neutral'" variant="subtle">
-                {{ product.statut }}
-              </UBadge>
-            </p>
-          </div>
-          <div class="flex gap-2">
-            <UButton size="sm" variant="soft" :to="`/produits/${product.slug}`">Voir</UButton>
-            <UButton
-              v-if="product.statut === 'actif'"
-              size="sm" variant="soft" color="error"
-              @click="handleDelete(product.slug)"
-            >
-              Désactiver
-            </UButton>
-            <UButton
-              v-else
-              size="sm" variant="soft" color="success"
-              @click="handleReactivate(product.slug)"
-            >
-              Réactiver
-            </UButton>
-          </div>
+  <div class="p-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <UCard>
+        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+          <UIcon name="i-lucide-wallet" class="w-5 h-5 text-primary" />
         </div>
+        <p class="text-sm text-gray-500">Chiffre d'affaires</p>
+        <p class="text-2xl font-bold mt-1">{{ Number(stats?.total_revenue ?? 0).toLocaleString('fr-FR') }} FCFA</p>
+      </UCard>
+      <UCard>
+        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+          <UIcon name="i-lucide-package" class="w-5 h-5 text-primary" />
+        </div>
+        <p class="text-sm text-gray-500">Produits actifs</p>
+        <p class="text-2xl font-bold mt-1">{{ stats?.total_products ?? 0 }}</p>
+      </UCard>
+      <UCard>
+        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+          <UIcon name="i-lucide-shopping-cart" class="w-5 h-5 text-primary" />
+        </div>
+        <p class="text-sm text-gray-500">Commandes</p>
+        <p class="text-2xl font-bold mt-1">{{ stats?.total_orders ?? 0 }}</p>
       </UCard>
     </div>
-    <p v-else class="text-gray-500">Aucun produit pour le moment.</p>
+
+    <UCard class="mb-6">
+      <template #header>
+        <h2 class="font-semibold">Ventes mensuelles</h2>
+      </template>
+      <ClientOnly>
+        <apexchart type="bar" height="280" :options="barOptions" :series="barSeries" />
+      </ClientOnly>
+    </UCard>
+
+    <UCard>
+      <template #header>
+        <h2 class="font-semibold">Commandes récentes</h2>
+      </template>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
+            <th class="pb-2">Client</th>
+            <th class="pb-2">Articles</th>
+            <th class="pb-2">Total</th>
+            <th class="pb-2">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in stats?.recent_orders" :key="order.id" class="border-b border-gray-100 dark:border-gray-800 last:border-0">
+            <td class="py-3">{{ order.user?.nom }}</td>
+            <td class="py-3 text-gray-500">{{ order.items?.map(i => i.product?.nom).join(', ') }}</td>
+            <td class="py-3">{{ Number(order.total).toLocaleString('fr-FR') }} FCFA</td>
+            <td class="py-3"><UBadge :color="statutColor(order.statut)" variant="subtle" size="xs">{{ order.statut }}</UBadge></td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-if="!stats?.recent_orders?.length" class="text-gray-500 text-sm py-4 text-center">Aucune commande pour le moment.</p>
+    </UCard>
   </div>
 </template>

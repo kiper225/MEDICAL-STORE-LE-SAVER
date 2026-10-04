@@ -69,4 +69,15 @@ class InstallationController extends Controller
         $installation->update(['statut' => InstallationStatus::Annulee]);
         return response()->json(null, 204);
     }
+
+    public function technicienDashboard(Request $request)
+    {
+        $techId = $request->user()->id;
+
+        return response()->json([
+            'total_installations' => Installation::where('technicien_id', $techId)->count(),
+            'en_attente' => Installation::where('technicien_id', $techId)->whereIn('statut', ['planifiee', 'en_cours'])->count(),
+            'terminees' => Installation::where('technicien_id', $techId)->where('statut', 'terminee')->count(),
+        ]);
+    }
 }

@@ -40,7 +40,11 @@ const handleReactivate = async (slug) => {
 <template>
   <div class="p-8">
     <h1 class="text-2xl font-bold mb-6">Tous les produits</h1>
-
+    <div class="flex items-center justify-between mb-6">
+      <UButton :to="`/dashboard/vendeur/produits/nouveau`" icon="i-lucide-plus">
+        Ajouter un produit
+      </UButton>
+    </div>
     <UCard>
       <table class="w-full text-sm">
         <thead>

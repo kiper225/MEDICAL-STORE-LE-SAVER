@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/products/{product}/images', [ProductController::class, 'uploadImages']);
         Route::delete('/products/{product}/images/{image}', [ProductController::class, 'deleteImage']);
         Route::get('/vendor/dashboard', [OrderController::class, 'vendorDashboard']);
+        Route::put('/order-items/{orderItem}/statut', [OrderController::class, 'updateItemStatus']);
     });
 
     // --- Technicien ---

@@ -9,6 +9,8 @@ export const useOrders = () => {
 
   const getVendorOrders = () => api('/vendor/orders')
   const getTechnicienDashboard = () => api('/technicien/dashboard')
+  const updateItemStatus = (itemId, statut) =>
+  api(`/order-items/${itemId}/statut`, { method: 'PUT', body: { statut } })
 
-  return { createOrder, getMyOrders, getAllOrders, updateOrderStatus, getVendorOrders, getTechnicienDashboard }
+  return { createOrder, getMyOrders, getAllOrders, updateOrderStatus, getVendorOrders, getTechnicienDashboard, updateItemStatus }
 }

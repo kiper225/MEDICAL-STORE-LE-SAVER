@@ -12,12 +12,14 @@ class OrderItem extends Model
         'product_id',
         'quantite',
         'prix_unitaire',
+        'statut'
     ];
 
     protected function casts(): array
     {
         return [
             'prix_unitaire' => 'decimal:2',
+            'statut' => 'string'
         ];
     }
 

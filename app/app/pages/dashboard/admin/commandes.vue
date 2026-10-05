@@ -53,7 +53,11 @@ const handleStatusChange = async (orderId, statut) => {
           <tr v-for="order in orders?.data" :key="order.id" class="border-b last:border-0">
             <td class="py-3">{{ order.user?.nom }}</td>
             <td class="py-3 text-gray-500">
-              {{ order.items?.map(i => i.product?.nom).join(', ') }}
+              <div v-for="item in order.items" :key="item.id" class="text-xs">
+                {{ item.product?.nom }}
+                <span class="text-gray-400">({{ item.product?.vendor?.nom || '—' }})</span>
+                — <UBadge size="xs" variant="subtle">{{ item.statut }}</UBadge>
+              </div>
             </td>
             <td class="py-3">{{ Number(order.total).toLocaleString('fr-FR') }} FCFA</td>
             <td class="py-3 text-gray-500 uppercase text-xs">{{ order.mode_paiement }}</td>

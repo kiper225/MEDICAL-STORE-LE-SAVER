@@ -114,4 +114,19 @@ class OrderController extends Controller
             'recent_orders' => Order::whereIn('id', $orderIds)->with(['user', 'items.product'])->latest()->limit(6)->get(),
         ]);
     }
+
+    public function updateItemStatus(Request $request, \App\Models\OrderItem $orderItem)
+    {
+        if ($request->user()->role === 'vendeur' && $orderItem->product->vendor_id !== $request->user()->id) {
+            abort(403, 'Cette ligne de commande ne vous appartient pas.');
+        }
+
+        $data = $request->validate([
+            'statut' => 'required|in:en_preparation,expedie,livre,annule',
+        ]);
+
+        $orderItem->update($data);
+
+        return response()->json($orderItem->load('product'));
+    }
 }

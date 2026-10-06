@@ -64,6 +64,42 @@ onMounted(() => {
   window.addEventListener('keydown', handler)
   onUnmounted(() => window.removeEventListener('keydown', handler))
 })
+
+const { getNotifications, markRead, markAllRead } = useNotifications()
+const notifications = ref([])
+const unreadCount = ref(0)
+
+const fetchNotifications = async () => {
+  const res = await getNotifications()
+  notifications.value = res.notifications.data
+  unreadCount.value = res.unread_count
+}
+
+onMounted(() => {
+  fetchNotifications()
+  const poll = setInterval(fetchNotifications, 30000)
+  onUnmounted(() => clearInterval(poll))
+})
+
+const handleNotifClick = async (n) => {
+  if (!n.read_at) {
+    await markRead(n.id)
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+    n.read_at = new Date().toISOString()
+  }
+  const routes = {
+    nouvelle_commande: '/dashboard/vendeur/commandes',
+    installation_assignee: '/dashboard/technicien',
+    statut_commande: '/dashboard/client',
+  }
+  router.push(routes[n.data?.type] || '/dashboard')
+}
+
+const handleMarkAllRead = async () => {
+  await markAllRead()
+  unreadCount.value = 0
+  notifications.value = notifications.value.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
+}
 </script>
 
 <template>
@@ -125,7 +161,41 @@ onMounted(() => {
         />
       </ClientOnly>
 
-      <UButton icon="i-lucide-bell" variant="ghost" color="neutral" />
+      <UPopover>
+        <UButton icon="i-lucide-bell" variant="ghost" color="neutral" class="relative">
+          <UChip
+            v-if="unreadCount > 0"
+            :text="unreadCount"
+            color="error"
+            :ui="{ base: 'text-[10px] font-bold min-w-[18px] h-[18px] px-1.5 py-0.5 m-1' }"
+          />
+        </UButton>
+
+        <template #content>
+          <div class="w-80 max-h-96 overflow-y-auto">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+              <span class="font-semibold text-sm">Notifications</span>
+              <button v-if="unreadCount > 0" class="text-xs text-primary hover:underline" @click="handleMarkAllRead">
+                Tout marquer lu
+              </button>
+            </div>
+
+            <template v-if="notifications.length">
+              <button
+                v-for="n in notifications"
+                :key="n.id"
+                class="w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800"
+                :class="{ 'bg-primary/5': !n.read_at }"
+                @click="handleNotifClick(n)"
+              >
+                <p class="text-sm">{{ n.data.message }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ new Date(n.created_at).toLocaleString('fr-FR') }}</p>
+              </button>
+            </template>
+            <p v-else class="text-sm text-gray-400 text-center py-6">Aucune notification.</p>
+          </div>
+        </template>
+      </UPopover>
 
       <ClientOnly>
         <UDropdownMenu

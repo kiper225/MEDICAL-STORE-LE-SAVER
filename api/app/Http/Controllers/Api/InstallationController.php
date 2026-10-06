@@ -59,7 +59,13 @@ class InstallationController extends Controller
             'signature_client' => 'nullable|string',
         ]);
 
+        $ancienTechnicien = $installation->technicien_id;
         $installation->update($data);
+
+        if (!empty($data['technicien_id']) && $data['technicien_id'] != $ancienTechnicien) {
+            $technicien = \App\Models\User::find($data['technicien_id']);
+            $technicien?->notify(new \App\Notifications\InstallationAssignedNotification($installation));
+        }
 
         return response()->json($installation);
     }

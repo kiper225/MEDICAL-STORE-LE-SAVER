@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\{
     AuthController, ProductController, CategoryController,
     RentalController, InstallationController, OrderController, PaymentController,
-    TechnicianController, UserController, AdminController, ReviewController
+    TechnicianController, UserController, AdminController, ReviewController, NotificationController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +40,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments', [PaymentController::class, 'store']);
 
     Route::post('/profile', [AuthController::class, 'updateProfile']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
 
     // --- Client uniquement ---
     Route::middleware('role:client')->group(function () {

@@ -31,7 +31,8 @@ class OrderController extends Controller
         $total = 0;
         foreach ($data['items'] as $item) {
             $product = \App\Models\Product::findOrFail($item['product_id']);
-            $total += $product->prix_vente * $item['quantite'];
+            $prix = $product->en_promo ? $product->prix_promo : $product->prix_vente;
+            $total += $prix * $item['quantite'];
         }
 
         $order = Order::create([
@@ -43,12 +44,23 @@ class OrderController extends Controller
 
         foreach ($data['items'] as $item) {
             $product = \App\Models\Product::findOrFail($item['product_id']);
+            $prix = $product->en_promo ? $product->prix_promo : $product->prix_vente;
+
             $order->items()->create([
                 'product_id' => $product->id,
                 'quantite' => $item['quantite'],
-                'prix_unitaire' => $product->prix_vente,
+                'prix_unitaire' => $prix,
             ]);
         }
+
+        $order->items()->with('product')->get()
+            ->pluck('product.vendor_id')
+            ->unique()
+            ->filter()
+            ->each(function ($vendorId) use ($order) {
+                $vendor = \App\Models\User::find($vendorId);
+                $vendor?->notify(new \App\Notifications\NewOrderNotification($order));
+            });
 
         return response()->json($order->load('items.product'), 201);
     }
@@ -126,6 +138,7 @@ class OrderController extends Controller
         ]);
 
         $orderItem->update($data);
+        $orderItem->order->user->notify(new \App\Notifications\OrderItemStatusNotification($orderItem));
 
         return response()->json($orderItem->load('product'));
     }

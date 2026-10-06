@@ -18,6 +18,9 @@ class ProductController extends Controller
             ->when($request->vendor_id, fn($q, $id) => $q->where('vendor_id', $id))
             ->when(!$request->boolean('all'), fn($q) => $q->where('statut', 'actif'))
             ->with(['category', 'images', 'vendor'])
+            ->when($request->boolean('promo'), fn($q) => $q->whereNotNull('prix_promo')
+            ->where('promo_fin', '>=', now())
+            ->where(fn($q2) => $q2->whereNull('promo_debut')->orWhere('promo_debut', '<=', now())))
             ->paginate($request->input('per_page', 20));
 
         return response()->json($products);
@@ -40,6 +43,12 @@ class ProductController extends Controller
             'caution_location' => 'nullable|numeric',
             'poids' => 'nullable|numeric',
             'dimensions' => 'nullable|string',
+            'prix_promo' => 'nullable|numeric|lt:prix_vente',
+            'promo_debut' => 'nullable|date',
+            'promo_fin' => 'nullable|date|after:promo_debut',
+            'marque' => 'nullable|string',
+            'couleurs' => 'nullable|array',
+            'statut' => 'sometimes|in:actif,inactif',
         ]);
 
         $data['reference'] = $data['reference'] ?? 'PROD-' . strtoupper(uniqid());
@@ -104,6 +113,9 @@ class ProductController extends Controller
             'marque' => 'nullable|string',
             'couleurs' => 'nullable|array',
             'statut' => 'sometimes|in:actif,inactif',
+            'prix_promo' => 'nullable|numeric|lt:prix_vente',
+            'promo_debut' => 'nullable|date',
+            'promo_fin' => 'nullable|date|after:promo_debut',
         ]);
 
         $product->update($data);

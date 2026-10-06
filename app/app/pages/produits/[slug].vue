@@ -174,11 +174,13 @@ const handleSubmitReview = async () => {
             <h1 class="text-2xl font-bold">{{ product.nom }}</h1>
 
             <div class="flex items-baseline gap-2 mt-3">
-              <span v-if="product.prix_vente" class="text-2xl font-bold text-primary">
+              <template v-if="product.en_promo">
+                <span class="text-2xl font-bold text-error">{{ Number(product.prix_promo).toLocaleString('fr-FR') }} FCFA</span>
+                <span class="text-sm text-gray-400 line-through">{{ Number(product.prix_vente).toLocaleString('fr-FR') }} FCFA</span>
+                <UBadge color="error" size="sm">-{{ product.pourcentage_reduction }}%</UBadge>
+              </template>
+              <span v-else-if="product.prix_vente" class="text-2xl font-bold text-primary">
                 {{ Number(product.prix_vente).toLocaleString('fr-FR') }} FCFA
-              </span>
-              <span v-if="product.prix_location_jour" class="text-sm text-gray-500">
-                ou {{ Number(product.prix_location_jour).toLocaleString('fr-FR') }} FCFA / jour en location
               </span>
             </div>
 

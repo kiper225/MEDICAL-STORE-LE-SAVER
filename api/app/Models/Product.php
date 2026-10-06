@@ -20,6 +20,7 @@ class Product extends Model
         'type_disponibilite', 'necessite_installation', 'necessite_certification',
         'prix_vente', 'prix_location_jour', 'prix_location_semaine',
         'prix_location_mois', 'caution_location', 'poids', 'dimensions', 'statut',
+        'prix_promo', 'promo_debut', 'promo_fin',
     ];
 
 
@@ -32,6 +33,9 @@ class Product extends Model
             'necessite_certification' => 'boolean',
             'prix_vente' => 'decimal:2',
             'prix_location_jour' => 'decimal:2',
+            'prix_promo' => 'decimal:2',
+            'promo_debut' => 'datetime',
+            'promo_fin' => 'datetime',
             'couleurs' => 'array',
         ];
     }
@@ -108,6 +112,24 @@ class Product extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function getEnPromoAttribute(): bool
+    {
+        if (!$this->prix_promo || !$this->promo_fin) {
+            return false;
+        }
+        $maintenant = now();
+        $debutOk = !$this->promo_debut || $this->promo_debut <= $maintenant;
+        return $debutOk && $this->promo_fin >= $maintenant;
+    }
+
+    public function getPourcentageReductionAttribute(): ?int
+    {
+        if (!$this->en_promo || !$this->prix_vente) {
+            return null;
+        }
+        return (int) round((1 - $this->prix_promo / $this->prix_vente) * 100);
     }
 
 }

@@ -37,6 +37,11 @@ const form = reactive({
   caution_location: props.initialProduct?.caution_location || null,
   poids: props.initialProduct?.poids || null,
   dimensions: props.initialProduct?.dimensions || '',
+  prix_promo: props.initialProduct?.prix_promo || null,
+  promo_debut: props.initialProduct?.promo_debut?.slice(0, 16) || '',
+  promo_fin: props.initialProduct?.promo_fin?.slice(0, 16) || '',
+  couleurs: props.initialProduct?.couleurs || [],
+  statut: props.initialProduct?.statut || 'actif',
 })
 
 const existingImages = ref(props.initialProduct?.images || [])
@@ -161,6 +166,21 @@ const handleSubmit = async () => {
     <div class="flex items-center gap-6">
       <UCheckbox v-model="form.necessite_installation" label="Nécessite une installation" />
       <UCheckbox v-model="form.necessite_certification" label="Nécessite une certification" />
+    </div>
+
+    <div class="border-t border-gray-200 dark:border-gray-800 pt-4">
+      <p class="text-sm font-semibold mb-3">Vente flash (optionnel)</p>
+      <UFormField label="Prix promo (FCFA)">
+        <UInput v-model.number="form.prix_promo" type="number" class="w-full" />
+      </UFormField>
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        <UFormField label="Début">
+          <UInput v-model="form.promo_debut" type="datetime-local" class="w-full" />
+        </UFormField>
+        <UFormField label="Fin">
+          <UInput v-model="form.promo_fin" type="datetime-local" class="w-full" />
+        </UFormField>
+      </div>
     </div>
 
     <!-- Photos existantes (mode édition) -->

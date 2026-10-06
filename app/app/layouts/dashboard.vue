@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useAuthStore } from '../stores/auth'
+
 const authStore = useAuthStore()
 const route = useRoute()
 const collapsed = ref(false)
@@ -25,8 +28,13 @@ const navByRole = {
   ],
 }
 
-const navItems = computed(() => navByRole[authStore.user?.role] || [])
-const pageTitle = computed(() => route.meta.pageTitle || 'Tableau de bord')
+const navItems = computed(() => {
+  const role = authStore.user?.role
+  return role ? navByRole[role as keyof typeof navByRole] ?? [] : []
+})
+const pageTitle = computed<string>(() => String(route.meta.pageTitle || 'Tableau de bord'))
+
+
 </script>
 
 <template>
@@ -58,7 +66,11 @@ const pageTitle = computed(() => route.meta.pageTitle || 'Tableau de bord')
       </nav>
 
       <div class="p-4 border-t border-gray-200 dark:border-gray-800 flex items-center gap-3 shrink-0">
-        <UAvatar :src="authStore.user?.photo_url" :alt="authStore.user?.nom" size="sm" />
+        <UAvatar
+          :src="(authStore.user as { photo_url?: string } | null | undefined)?.photo_url"
+          :alt="authStore.user?.nom"
+          size="sm"
+        />
         <div v-if="!collapsed" class="flex-1 min-w-0">
           <p class="text-sm font-medium truncate">{{ authStore.user?.nom }}</p>
           <p class="text-xs text-gray-500 capitalize">{{ authStore.user?.role }}</p>
@@ -68,7 +80,11 @@ const pageTitle = computed(() => route.meta.pageTitle || 'Tableau de bord')
 
     <!-- Colonne principale -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-      <DashboardHeader :title="pageTitle" v-model:collapsed="collapsed" />
+      <DashboardHeader
+        :title="pageTitle"
+        :collapsed="collapsed"
+        @update:collapsed="collapsed = $event"
+      />
       <div class="flex-1 overflow-y-auto">
         <slot />
       </div>

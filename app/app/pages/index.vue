@@ -111,6 +111,14 @@ const faqs = [
   },
 ]
 const openFaq = ref(null)
+
+const { data: produitsPromo } = await useAsyncData('home-promo', () => getProducts({ promo: true, per_page: 8 }))
+
+const prochaineFinPromo = computed(() => {
+  const fins = produitsPromo.value?.data?.map((p) => p.promo_fin).filter(Boolean) || []
+  if (!fins.length) return null
+  return fins.sort()[0]
+})
 </script>
 
 <template>
@@ -140,6 +148,36 @@ const openFaq = ref(null)
         <UIcon name="i-lucide-store" class="w-7 h-7 text-primary mb-2" />
         <p class="font-semibold text-sm">Devenir vendeur</p>
       </NuxtLink>
+    </div>
+
+    <div v-if="produitsPromo?.data?.length" class="mt-8">
+      <div class="bg-gradient-to-r from-error to-error/80 text-white rounded-t-lg px-5 py-3 flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-zap" class="w-5 h-5" />
+          <h2 class="font-bold">Ventes flash</h2>
+        </div>
+        <CountdownTimer v-if="prochaineFinPromo" :target="prochaineFinPromo" />
+      </div>
+      <div class="border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg p-5 flex gap-4 overflow-x-auto">
+        <NuxtLink
+          v-for="product in produitsPromo.data"
+          :key="product.id"
+          :to="`/produits/${product.slug}`"
+          class="shrink-0 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden relative"
+        >
+          <UBadge color="error" class="absolute top-2 left-2 z-10">-{{ product.pourcentage_reduction }}%</UBadge>
+          <div class="aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden">
+            <img v-if="product.images?.length" :src="product.images[0].url" class="w-full h-full object-cover" />
+          </div>
+          <div class="p-3">
+            <p class="text-sm font-medium line-clamp-2">{{ product.nom }}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-error font-bold text-sm">{{ Number(product.prix_promo).toLocaleString('fr-FR') }} FCFA</span>
+              <span class="text-xs text-gray-400 line-through">{{ Number(product.prix_vente).toLocaleString('fr-FR') }} FCFA</span>
+            </div>
+          </div>
+        </NuxtLink>
+      </div>
     </div>
 
     <!-- Nos meilleures catégories -->
